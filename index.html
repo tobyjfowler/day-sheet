@@ -1,0 +1,577 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Day Sheet</title>
+<meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#12151a" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23b8780f'/%3E%3Cpath d='M8 11h16M8 17h11M8 23h7' stroke='%23fff' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: a trading desk's day sheet — date rail on top, summary strip, then two columns: the day (routine, habits, journal) beside the desk (trading plan and review). */
+:root{
+  --bg:#f3f4f6; --paper:#ffffff; --paper-2:#eaecf0; --line:#d6dae1; --line-strong:#aeb5c0;
+  --fg:#171b22; --fg-2:#4a5260; --fg-3:#7a8392;
+  --accent:#b8780f; --accent-ink:#8a5a09; --accent-soft:#f6e9cc;
+  --up:#1f8a5a; --up-soft:#d9f1e4; --down:#c6433c; --down-soft:#f8dcda; --flat:#6b7483;
+  --focus:#2a62c7;
+  --display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#12151a; --paper:#1a1e25; --paper-2:#222731; --line:#2e3440; --line-strong:#434b59;
+  --fg:#e7eaef; --fg-2:#aab2bf; --fg-3:#7a8392;
+  --accent:#d9962a; --accent-ink:#e8ab48; --accent-soft:#3a2d13;
+  --up:#3bbf7f; --up-soft:#17362a; --down:#e0605a; --down-soft:#3d1f1e; --flat:#8a93a2;
+  --focus:#6b9cf0; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#12151a; --paper:#1a1e25; --paper-2:#222731; --line:#2e3440; --line-strong:#434b59;
+  --fg:#e7eaef; --fg-2:#aab2bf; --fg-3:#7a8392;
+  --accent:#d9962a; --accent-ink:#e8ab48; --accent-soft:#3a2d13;
+  --up:#3bbf7f; --up-soft:#17362a; --down:#e0605a; --down-soft:#3d1f1e; --flat:#8a93a2;
+  --focus:#6b9cf0; color-scheme:dark }
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
+h1,h2,h3{margin:0;font-family:var(--display);text-wrap:balance}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* top rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding-block:12px}
+.brand{font-family:var(--display);font-weight:700;font-size:18px;letter-spacing:.02em}
+.brand small{display:block;font:500 11px var(--mono);color:var(--fg-3);letter-spacing:.08em;text-transform:uppercase}
+.datenav{display:flex;align-items:center;gap:6px;margin-left:auto;flex-wrap:wrap}
+.datenav button,.btn{background:var(--paper);border:1px solid var(--line-strong);border-radius:6px;padding:6px 10px;cursor:pointer;font-weight:500;font-size:14px}
+.datenav button:hover,.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.small{padding:3px 8px;font-size:12px}
+.datenav input[type=date]{background:var(--paper);border:1px solid var(--line-strong);border-radius:6px;padding:5px 8px;font-family:var(--mono);font-size:14px}
+.daylabel{font-family:var(--display);font-weight:600;font-size:17px;min-width:0}
+.daylabel .dow{color:var(--accent-ink)}
+.savestate{font:400 12px var(--mono);color:var(--fg-3);min-width:70px;text-align:right}
+
+/* summary strip */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-block:16px}
+.tile{background:var(--paper);padding:12px 14px;min-width:0}
+.tile .k{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
+.tile .v{font-family:var(--display);font-weight:700;font-size:26px;line-height:1.1;font-variant-numeric:tabular-nums;margin-top:4px}
+.tile .v small{font:500 13px var(--body);color:var(--fg-2)}
+.bar{height:5px;background:var(--paper-2);margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+@media (prefers-reduced-motion:reduce){ .bar i{transition:none} }
+
+/* columns */
+.cols{display:grid;grid-template-columns:minmax(0,5fr) minmax(0,7fr);gap:20px;align-items:start}
+@media (max-width:860px){ .cols{grid-template-columns:1fr} }
+.col{display:flex;flex-direction:column;gap:20px;min-width:0}
+
+section.card{background:var(--paper);border:1px solid var(--line);min-width:0}
+.card-h{display:flex;align-items:baseline;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line)}
+.card-h h2{font-size:15px;font-weight:700;letter-spacing:.01em;text-transform:uppercase}
+.card-h .sub{font:400 12px var(--mono);color:var(--fg-3)}
+.card-h .right{margin-left:auto;display:flex;gap:6px}
+.card-b{padding:14px 16px;display:flex;flex-direction:column;gap:14px}
+
+/* routine */
+.block h3{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--accent-ink);display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.block h3 .t{font:400 11px var(--mono);color:var(--fg-3);letter-spacing:0;text-transform:none}
+.block h3 .cnt{margin-left:auto;font:400 11px var(--mono);color:var(--fg-3);letter-spacing:0;text-transform:none}
+.items{display:flex;flex-direction:column}
+.item{display:flex;align-items:center;gap:10px;padding:7px 4px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item label{display:flex;align-items:center;gap:10px;flex:1;min-width:0;cursor:pointer}
+.item input[type=checkbox]{width:17px;height:17px;accent-color:var(--accent);flex:none;margin:0}
+.item .txt{min-width:0;overflow-wrap:anywhere}
+.item.done .txt{color:var(--fg-3);text-decoration:line-through}
+.item .rm{opacity:0;border:0;background:none;color:var(--fg-3);cursor:pointer;padding:2px 6px;font-size:14px}
+.item:hover .rm,.item .rm:focus-visible{opacity:1}
+.addrow{display:flex;gap:6px;margin-top:4px}
+.addrow input{flex:1;min-width:0;background:var(--paper-2);border:1px solid transparent;border-radius:6px;padding:6px 10px;font-size:13px}
+.addrow input:focus{border-color:var(--line-strong);background:var(--paper)}
+
+/* habits */
+.habit{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;padding:8px 4px;border-top:1px solid var(--line)}
+.habit:first-child{border-top:0}
+.habit .name{min-width:0;overflow-wrap:anywhere}
+.habit .streak{font:500 12px var(--mono);color:var(--fg-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+.habit .streak b{color:var(--accent-ink);font-weight:500}
+.dots{display:flex;gap:3px}
+.dots i{width:8px;height:8px;border-radius:2px;background:var(--paper-2);border:1px solid var(--line)}
+.dots i.on{background:var(--accent);border-color:var(--accent)}
+.dots i.today{outline:1px solid var(--line-strong);outline-offset:1px}
+@media (max-width:420px){ .dots i:nth-child(-n+7){display:none} }
+
+/* fields */
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field>span{font:500 11px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
+.field textarea,.field input[type=text],.field input[type=number],.field select{width:100%;background:var(--paper-2);border:1px solid transparent;border-radius:6px;padding:8px 10px;font-size:14px;resize:vertical;min-height:38px}
+.field textarea{min-height:64px;line-height:1.4}
+.field textarea:focus,.field input:focus,.field select:focus{border-color:var(--line-strong);background:var(--paper)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media (max-width:520px){ .grid2,.grid3{grid-template-columns:1fr} }
+.seg{display:flex;gap:4px;flex-wrap:wrap}
+.seg button{background:var(--paper-2);border:1px solid transparent;border-radius:6px;padding:6px 12px;cursor:pointer;font-size:13px;font-weight:500}
+.seg button[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-ink)}
+.seg button.up[aria-pressed=true]{background:var(--up-soft);border-color:var(--up);color:var(--up)}
+.seg button.down[aria-pressed=true]{background:var(--down-soft);border-color:var(--down);color:var(--down)}
+.mood{display:flex;gap:6px}
+.mood button{width:36px;height:36px;border-radius:50%;background:var(--paper-2);border:1px solid transparent;cursor:pointer;font-family:var(--mono);font-size:13px}
+.mood button[aria-pressed=true]{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* trading tabs */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--line);padding:0 16px}
+.tabs button{background:none;border:0;border-bottom:2px solid transparent;padding:10px 12px;cursor:pointer;font-family:var(--display);font-weight:600;font-size:14px;color:var(--fg-2);margin-bottom:-1px}
+.tabs button[aria-selected=true]{color:var(--fg);border-bottom-color:var(--accent)}
+.phase{border:1px solid var(--line);background:var(--paper)}
+.phase>h3{font-size:12px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:9px 12px;border-bottom:1px solid var(--line);display:flex;gap:8px;align-items:center}
+.phase>h3 .t{font:400 11px var(--mono);color:var(--fg-3);letter-spacing:0;text-transform:none;margin-left:auto}
+.phase .pb{padding:12px;display:flex;flex-direction:column;gap:12px}
+.phase.pre>h3{color:var(--accent-ink)}
+.phase.post>h3{color:var(--fg-2)}
+.pnl{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pnl input{width:110px;font-family:var(--mono)}
+.pnl .r{font:500 13px var(--mono);padding:4px 8px;border-radius:4px;background:var(--paper-2)}
+.pnl .r.up{color:var(--up);background:var(--up-soft)}
+.pnl .r.down{color:var(--down);background:var(--down-soft)}
+.note{font-size:12px;color:var(--fg-3)}
+.empty{font-size:13px;color:var(--fg-3);padding:4px}
+
+/* week view */
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}
+.wd{border:1px solid var(--line);background:var(--paper-2);padding:6px;min-width:0;cursor:pointer;text-align:left;border-radius:4px}
+.wd.sel{border-color:var(--accent);background:var(--accent-soft)}
+.wd .d{font:500 11px var(--mono);color:var(--fg-3)}
+.wd .n{font-family:var(--display);font-weight:700;font-size:16px;font-variant-numeric:tabular-nums}
+.wd .m{display:flex;gap:3px;margin-top:4px;flex-wrap:wrap}
+.wd .m i{width:6px;height:6px;border-radius:50%;background:var(--line-strong)}
+.wd .m i.r{background:var(--accent)}
+.wd .m i.j{background:var(--up)}
+.wd .m i.t{background:var(--focus)}
+.legend{display:flex;gap:14px;font:400 11px var(--mono);color:var(--fg-3);flex-wrap:wrap}
+.legend i{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.syncpanel{margin-top:16px}
+.savestate.ok{color:var(--up)}.savestate.bad{color:var(--down)}
+.settings{display:none}
+.settings.open{display:block}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:6px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .2s}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="rail">
+    <div class="brand">Day Sheet<small>Routine · Habits · Journal · Desk</small></div>
+    <div class="datenav">
+      <button id="prev" aria-label="Previous day">‹</button>
+      <span class="daylabel" id="daylabel"></span>
+      <button id="next" aria-label="Next day">›</button>
+      <input type="date" id="datepick" aria-label="Pick a date">
+      <button id="today">Today</button>
+      <button class="savestate" id="savestate" type="button" title="Sync settings" style="border:0;background:none;cursor:pointer">local</button>
+    </div>
+  </header>
+
+  <section class="card syncpanel" id="syncpanel" hidden>
+    <div class="card-h"><h2>Sync</h2><span class="sub">share entries between devices via your Cloudflare Worker</span><div class="right"><button class="btn small" id="sync-close" type="button">Close</button></div></div>
+    <div class="card-b">
+      <div class="grid2">
+        <div class="field"><span>Worker URL</span><input type="text" id="sync-url" placeholder="https://day-sheet.yourname.workers.dev" autocomplete="off"></div>
+        <div class="field"><span>Token</span><input type="password" id="sync-token" placeholder="the TOKEN secret you set on the Worker" autocomplete="off"></div>
+      </div>
+      <div class="note" id="sync-status">Not connected. Entries stay in this browser only.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary" id="sync-save" type="button">Connect &amp; sync</button>
+        <button class="btn" id="sync-pull" type="button">Refresh from server</button>
+        <button class="btn" id="sync-forget" type="button">Disconnect</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="strip" id="strip">
+    <div class="tile"><div class="k">Routine</div><div class="v" id="t-routine">0<small> / 0</small></div><div class="bar"><i id="t-routine-bar"></i></div></div>
+    <div class="tile"><div class="k">Habits</div><div class="v" id="t-habits">0<small> / 0</small></div><div class="bar"><i id="t-habits-bar"></i></div></div>
+    <div class="tile"><div class="k">Best streak today</div><div class="v" id="t-streak">0<small> days</small></div></div>
+    <div class="tile"><div class="k">Day trading P&amp;L</div><div class="v" id="t-pnl">—</div></div>
+    <div class="tile"><div class="k">Mood</div><div class="v" id="t-mood">—</div></div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+
+      <section class="card" id="week-card">
+        <div class="card-h"><h2>This week</h2><span class="sub" id="weeklabel"></span></div>
+        <div class="card-b">
+          <div class="week" id="week"></div>
+          <div class="legend"><span><i style="background:var(--accent)"></i>routine done</span><span><i style="background:var(--up)"></i>journaled</span><span><i style="background:var(--focus)"></i>traded</span></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Routine</h2><span class="sub">tick as you go</span><div class="right"><button class="btn small" id="edit-routine">Edit lists</button></div></div>
+        <div class="card-b" id="routine"></div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Habits</h2><span class="sub">streaks count consecutive days</span><div class="right"><button class="btn small" id="edit-habits">Edit</button></div></div>
+        <div class="card-b">
+          <div id="habits"></div>
+          <div class="addrow settings" id="habit-add"><input type="text" id="habit-new" placeholder="New habit, e.g. 20 min walk"><button class="btn small" id="habit-add-btn">Add</button></div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-h"><h2>Journal</h2><span class="sub">morning intent, evening reflection</span></div>
+        <div class="card-b">
+          <div class="field"><span>Three things I'm grateful for</span><textarea id="j-grat" rows="3" placeholder="1.&#10;2.&#10;3."></textarea></div>
+          <div class="field"><span>What would make today great</span><textarea id="j-great" rows="2"></textarea></div>
+          <div class="field"><span>One thing I'll say no to today</span><input type="text" id="j-no"></div>
+          <div class="field"><span>Mood</span><div class="mood" id="mood"></div></div>
+          <div class="field"><span>Wins today</span><textarea id="j-wins" rows="2"></textarea></div>
+          <div class="field"><span>What I'd do differently</span><textarea id="j-diff" rows="2"></textarea></div>
+          <div class="field"><span>Free write</span><textarea id="j-free" rows="5" placeholder="Anything on your mind."></textarea></div>
+        </div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="card">
+        <div class="card-h"><h2>The desk</h2><span class="sub">plan before the open, review after the close</span></div>
+        <div class="tabs" role="tablist">
+          <button role="tab" data-tab="stocks" aria-selected="true">Stocks</button>
+          <button role="tab" data-tab="swing" aria-selected="false">Swing</button>
+          <button role="tab" data-tab="day" aria-selected="false">Day trading</button>
+        </div>
+
+        <div class="card-b" id="tab-stocks" role="tabpanel">
+          <div class="phase pre"><h3>Pre-market plan<span class="t">before 14:30 London</span></h3><div class="pb">
+            <div class="field"><span>Earnings, news &amp; catalysts today</span><textarea id="s-news" rows="2" placeholder="Who reports, what data drops, anything that moves my names."></textarea></div>
+            <div class="field"><span>Names on watch &amp; why</span><textarea id="s-watch" rows="3" placeholder="Ticker — thesis, price I'd buy, price I'd trim."></textarea></div>
+            <div class="field"><span>Planned actions</span><textarea id="s-actions" rows="2" placeholder="Buy / trim / hold / nothing. Nothing is a valid plan."></textarea></div>
+          </div></div>
+          <div class="phase post"><h3>Post-market review<span class="t">after 21:00 London</span></h3><div class="pb">
+            <div class="field"><span>What I actually did</span><textarea id="s-did" rows="2"></textarea></div>
+            <div class="field"><span>Portfolio notes &amp; thesis changes</span><textarea id="s-notes" rows="3" placeholder="Did anything change the long-term case? Valuation still make sense?"></textarea></div>
+            <div class="field"><span>Research to do next</span><textarea id="s-next" rows="2"></textarea></div>
+          </div></div>
+        </div>
+
+        <div class="card-b" id="tab-swing" role="tabpanel" hidden>
+          <div class="phase pre"><h3>Pre-market plan<span class="t">daily / 4H timeframe</span></h3><div class="pb">
+            <div class="field"><span>Open positions, stops &amp; targets</span><textarea id="w-open" rows="3" placeholder="Instrument · size · entry · stop · target · days held"></textarea></div>
+            <div class="field"><span>Setups forming</span><textarea id="w-setups" rows="3" placeholder="What's close to a trigger, what would confirm it."></textarea></div>
+            <div class="field"><span>Management plan for today</span><textarea id="w-manage" rows="2" placeholder="Trail stops? Take partials? Leave alone?"></textarea></div>
+          </div></div>
+          <div class="phase post"><h3>Post-market review</h3><div class="pb">
+            <div class="grid2">
+              <div class="field"><span>Entries / exits today</span><textarea id="w-trades" rows="3"></textarea></div>
+              <div class="field"><span>Realised R today</span><input type="number" step="0.1" id="w-r" placeholder="e.g. 1.5"></div>
+            </div>
+            <div class="field"><span>Did I follow the plan?</span><div class="seg" id="w-plan"><button class="up" data-v="yes">Yes</button><button data-v="partly">Partly</button><button class="down" data-v="no">No</button></div></div>
+            <div class="field"><span>Lessons</span><textarea id="w-lessons" rows="2"></textarea></div>
+          </div></div>
+        </div>
+
+        <div class="card-b" id="tab-day" role="tabpanel" hidden>
+          <div class="phase pre"><h3>Pre-market plan<span class="t">NQ / MNQ · US open 14:30 London</span></h3><div class="pb">
+            <div class="field"><span>Bias</span><div class="seg" id="d-bias"><button class="up" data-v="long">Long</button><button data-v="neutral">Neutral</button><button class="down" data-v="short">Short</button></div></div>
+            <div class="grid3">
+              <div class="field"><span>PDH</span><input type="text" id="d-pdh" placeholder="prev day high"></div>
+              <div class="field"><span>PD EQ</span><input type="text" id="d-eq" placeholder="equilibrium"></div>
+              <div class="field"><span>PDL</span><input type="text" id="d-pdl" placeholder="prev day low"></div>
+            </div>
+            <div class="field"><span>Other key levels &amp; overnight range</span><textarea id="d-levels" rows="2"></textarea></div>
+            <div class="field"><span>A+ setups I'm allowed to take</span><textarea id="d-setups" rows="2" placeholder="Only these. Anything else is a pass."></textarea></div>
+            <div class="grid3">
+              <div class="field"><span>Max loss</span><input type="text" id="d-maxloss" placeholder="£ or R"></div>
+              <div class="field"><span>Max trades</span><input type="number" id="d-maxtrades" min="0"></div>
+              <div class="field"><span>Stop trading at</span><input type="text" id="d-stoptime" placeholder="e.g. 16:00"></div>
+            </div>
+            <div class="field"><span>Scheduled news to avoid</span><input type="text" id="d-news" placeholder="e.g. 13:30 CPI, 19:00 FOMC"></div>
+          </div></div>
+          <div class="phase post"><h3>Post-market review</h3><div class="pb">
+            <div class="pnl">
+              <div class="field"><span>Trades taken</span><input type="number" id="d-count" min="0" style="width:90px"></div>
+              <div class="field"><span>Net P&amp;L</span><input type="number" step="0.01" id="d-pnl" placeholder="0.00"></div>
+              <div class="field"><span>Net R</span><input type="number" step="0.1" id="d-r" placeholder="0.0"></div>
+              <div class="field"><span>Grade</span><div class="seg" id="d-grade"><button data-v="A">A</button><button data-v="B">B</button><button data-v="C">C</button><button data-v="D">D</button><button data-v="F">F</button></div></div>
+            </div>
+            <div class="note">Grade the process, not the P&amp;L. A losing day traded to plan is an A.</div>
+            <div class="field"><span>Rules followed / broken</span><textarea id="d-rules" rows="2" placeholder="Took only A+ setups? Respected max loss? Stopped on time?"></textarea></div>
+            <div class="grid2">
+              <div class="field"><span>Best trade &amp; why</span><textarea id="d-best" rows="2"></textarea></div>
+              <div class="field"><span>Worst trade &amp; why</span><textarea id="d-worst" rows="2"></textarea></div>
+            </div>
+            <div class="field"><span>Emotional state during the session</span><textarea id="d-emotion" rows="2" placeholder="Calm, rushed, revenge-y, bored…"></textarea></div>
+            <div class="field"><span>One adjustment for tomorrow</span><input type="text" id="d-adjust"></div>
+          </div></div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+"use strict";
+const $=s=>document.querySelector(s), $$=s=>Array.from(document.querySelectorAll(s));
+
+/* ---------- defaults ---------- */
+const DEFAULT_SETTINGS={
+  routine:{
+    morning:{label:"Morning",time:"06:30–09:00",items:["Up on time, water, no phone for 30 min","Movement: walk, gym or stretch","Breakfast away from screens","Read overnight session: Asia, Europe, futures","Mark PDH / PDL / EQ and today's news times","Write the pre-market plans on the desk"]},
+    midday:{label:"Midday",time:"12:00–14:30",items:["Lunch, properly, away from the desk","Short walk or fresh air","Final check of the plan before the US open","Phone on do-not-disturb for the session"]},
+    evening:{label:"Evening",time:"after the close",items:["Post-market reviews filled in","Journal: wins, lessons, mood","Tomorrow's three priorities written down","Screens off 60 min before bed","Bed by a fixed time"]}
+  },
+  habits:["No trades outside the plan","Exercise","Read 20 pages","8 hours sleep","No alcohol","Journal written"]
+};
+const JOURNAL=["j-grat","j-great","j-no","j-wins","j-diff","j-free"];
+const TRADING={
+  stocks:["s-news","s-watch","s-actions","s-did","s-notes","s-next"],
+  swing:["w-open","w-setups","w-manage","w-trades","w-r","w-lessons"],
+  day:["d-pdh","d-eq","d-pdl","d-levels","d-setups","d-maxloss","d-maxtrades","d-stoptime","d-news","d-count","d-pnl","d-r","d-rules","d-best","d-worst","d-emotion","d-adjust"]
+};
+const SEGS={"w-plan":"w-plan","d-bias":"d-bias","d-grade":"d-grade"};
+
+/* ---------- state ---------- */
+let settings=structuredClone(DEFAULT_SETTINGS);
+let days={};               // date -> doc body
+let current=todayISO();
+let dayDirty=false, settingsDirty=false, writeTimer=null, writing=false, pendingAgain=false;
+const dirtyDays=new Set();
+
+function todayISO(){const d=new Date();return iso(d)}
+function iso(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function fromISO(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d)}
+function addDays(s,n){const d=fromISO(s);d.setDate(d.getDate()+n);return iso(d)}
+function blankDay(date){return {date,routine:{},habits:{},journal:{},mood:0,trading:{stocks:{},swing:{},day:{}},updatedAt:""}}
+function day(date){if(!days[date])days[date]=blankDay(date);return days[date]}
+
+/* ---------- storage: db or localStorage ---------- */
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+function loadLocal(){
+  const s=lsGet("daysheet:settings"); if(s) settings=s;
+  const d=lsGet("daysheet:days"); if(d) days=d;
+}
+function scheduleWrite(what){
+  if(what==="day"){dayDirty=true; dirtyDays.add(current)} if(what==="settings")settingsDirty=true;
+  lsSet("daysheet:days",days); lsSet("daysheet:settings",settings);   // always cache locally
+  setSave(sync.url?"saving…":"local");
+  clearTimeout(writeTimer); writeTimer=setTimeout(flush,800);
+}
+async function flush(){
+  if(!sync.url||!sync.token){dayDirty=false;settingsDirty=false;dirtyDays.clear();setSave("local");return}
+  if(writing){pendingAgain=true;return}
+  writing=true;
+  try{
+    const todo=Array.from(dirtyDays); dirtyDays.clear(); dayDirty=false;
+    for(const d of todo){ const body=day(d); body.updatedAt=new Date().toISOString(); await api("PUT","/days/"+d,body) }
+    if(settingsDirty){ settingsDirty=false; settings.updatedAt=new Date().toISOString(); await api("PUT","/settings",settings) }
+    setSave("synced","ok");
+  }catch(e){
+    setSave("not synced","bad"); dirtyDays.add(current); dayDirty=true;
+    toast(e.status===401?"Worker rejected the token. Check Sync settings.":"Couldn't reach the Worker. Saved here; will retry on your next change.");
+  }
+  writing=false;
+  if(pendingAgain){pendingAgain=false;flush()}
+}
+function setSave(t,cls){const el=$("#savestate");el.textContent=t;el.className="savestate"+(cls?" "+cls:"")}
+function toast(msg){const t=$("#toast");t.textContent=msg;t.classList.add("show");clearTimeout(t._h);t._h=setTimeout(()=>t.classList.remove("show"),2600)}
+
+/* ---------- Worker sync ---------- */
+const sync={url:"",token:""};
+(function(){const s=lsGet("daysheet:sync"); if(s){sync.url=s.url||"";sync.token=s.token||""}})();
+async function api(method,path,body){
+  const r=await fetch(sync.url.replace(/\/$/,"")+path,{method,headers:{"Authorization":"Bearer "+sync.token,"Content-Type":"application/json"},body:body?JSON.stringify(body):undefined});
+  if(!r.ok){const e=new Error("HTTP "+r.status);e.status=r.status;throw e}
+  return r.json();
+}
+async function pull(){
+  if(!sync.url||!sync.token)return;
+  setSave("syncing…");
+  try{
+    const since=addDays(todayISO(),-120);
+    const [rs,rd]=await Promise.all([api("GET","/settings"),api("GET","/days?since="+since)]);
+    if(rs&&rs.routine&&rs.habits){ if(!settings.updatedAt||!rs.updatedAt||rs.updatedAt>=settings.updatedAt) settings=rs }
+    else { settingsDirty=true } // server has no settings yet: push ours
+    for(const d of Object.keys(rd)){
+      const remote=rd[d], local=days[d];
+      if(!local||!local.updatedAt||(remote.updatedAt&&remote.updatedAt>=local.updatedAt)) days[d]=remote;
+      else dirtyDays.add(d);  // local newer: push it
+    }
+    // local-only days (made before connecting) get pushed
+    for(const d of Object.keys(days)){ if(!rd[d]&&days[d].updatedAt) dirtyDays.add(d) }
+    lsSet("daysheet:days",days); lsSet("daysheet:settings",settings);
+    renderAll();
+    if(dirtyDays.size||settingsDirty){dayDirty=dirtyDays.size>0;await flush()} else setSave("synced","ok");
+    $("#sync-status").textContent="Connected. Last refresh "+new Date().toLocaleTimeString("en-GB",{hour:"2-digit",minute:"2-digit"})+".";
+  }catch(e){
+    setSave("not synced","bad");
+    $("#sync-status").textContent=e.status===401?"The Worker rejected the token.":"Couldn't reach the Worker at that URL.";
+  }
+}
+function connect(){
+  $("#sync-url").value=sync.url; $("#sync-token").value=sync.token;
+  if(sync.url&&sync.token){pull()} else setSave("local");
+}
+$("#savestate").addEventListener("click",()=>{$("#syncpanel").hidden=!$("#syncpanel").hidden});
+$("#sync-close").addEventListener("click",()=>{$("#syncpanel").hidden=true});
+$("#sync-save").addEventListener("click",()=>{ sync.url=$("#sync-url").value.trim(); sync.token=$("#sync-token").value.trim(); lsSet("daysheet:sync",sync); if(!sync.url||!sync.token){toast("Enter both the Worker URL and the token");return} pull() });
+$("#sync-pull").addEventListener("click",pull);
+$("#sync-forget").addEventListener("click",()=>{ sync.url="";sync.token="";lsSet("daysheet:sync",sync);$("#sync-url").value="";$("#sync-token").value="";$("#sync-status").textContent="Not connected. Entries stay in this browser only.";setSave("local") });
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&sync.url&&!dayDirty&&!settingsDirty) pull() });
+
+/* ---------- rendering ---------- */
+function renderAll(){renderDate();renderWeek();renderRoutine();renderHabits();renderJournal();renderTrading();renderStrip()}
+
+function renderDate(){
+  const d=fromISO(current);
+  const dow=d.toLocaleDateString("en-GB",{weekday:"long"});
+  const rest=d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"});
+  $("#daylabel").innerHTML='<span class="dow">'+dow+'</span> '+rest;
+  $("#datepick").value=current;
+}
+function weekStart(s){const d=fromISO(s);const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return iso(d)}
+function renderWeek(){
+  const ws=weekStart(current), el=$("#week"); el.innerHTML="";
+  $("#weeklabel").textContent="w/c "+fromISO(ws).toLocaleDateString("en-GB",{day:"numeric",month:"short"});
+  for(let i=0;i<7;i++){
+    const ds=addDays(ws,i), dd=days[ds]; const b=document.createElement("button");
+    b.className="wd"+(ds===current?" sel":""); b.type="button"; b.dataset.date=ds;
+    const d=fromISO(ds);
+    const marks=[];
+    if(dd){ const rc=routineCount(dd); if(rc.total&&rc.done===rc.total)marks.push("r");
+      if(Object.values(dd.journal||{}).some(v=>v&&String(v).trim()))marks.push("j");
+      const t=dd.trading||{}; if(Object.values(t).some(sec=>Object.values(sec||{}).some(v=>v!==""&&v!=null)))marks.push("t"); }
+    b.innerHTML='<div class="d">'+d.toLocaleDateString("en-GB",{weekday:"short"})+'</div><div class="n">'+d.getDate()+'</div><div class="m">'+marks.map(m=>'<i class="'+m+'"></i>').join("")+'</div>';
+    b.addEventListener("click",()=>goTo(ds));
+    el.appendChild(b);
+  }
+}
+function routineCount(dd){
+  let total=0,done=0;
+  for(const k of Object.keys(settings.routine)){ for(const it of settings.routine[k].items){ total++; if(dd.routine&&dd.routine[k]&&dd.routine[k][it])done++ } }
+  return {total,done};
+}
+function renderRoutine(){
+  const dd=day(current), el=$("#routine"); el.innerHTML="";
+  const editing=el.classList.contains("editing");
+  for(const key of Object.keys(settings.routine)){
+    const blk=settings.routine[key]; const wrap=document.createElement("div"); wrap.className="block";
+    const done=blk.items.filter(it=>dd.routine[key]&&dd.routine[key][it]).length;
+    wrap.innerHTML='<h3>'+esc(blk.label)+'<span class="t">'+esc(blk.time)+'</span><span class="cnt">'+done+'/'+blk.items.length+'</span></h3><div class="items"></div>';
+    const items=wrap.querySelector(".items");
+    blk.items.forEach((it,idx)=>{
+      const checked=!!(dd.routine[key]&&dd.routine[key][it]);
+      const row=document.createElement("div"); row.className="item"+(checked?" done":"");
+      const id="r-"+key+"-"+idx;
+      row.innerHTML='<label for="'+id+'"><input type="checkbox" id="'+id+'"'+(checked?" checked":"")+'><span class="txt">'+esc(it)+'</span></label>'+(editing?'<button class="rm" aria-label="Remove" style="opacity:1">✕</button>':'');
+      row.querySelector("input").addEventListener("change",e=>{ dd.routine[key]=dd.routine[key]||{}; if(e.target.checked)dd.routine[key][it]=true; else delete dd.routine[key][it]; scheduleWrite("day"); renderRoutine(); renderStrip(); renderWeek(); });
+      const rm=row.querySelector(".rm"); if(rm) rm.addEventListener("click",()=>{ blk.items.splice(idx,1); scheduleWrite("settings"); renderRoutine(); renderStrip() });
+      items.appendChild(row);
+    });
+    if(editing){
+      const add=document.createElement("div"); add.className="addrow";
+      add.innerHTML='<input type="text" id="radd-'+key+'" placeholder="Add to '+esc(blk.label.toLowerCase())+'"><button class="btn small" type="button">Add</button>';
+      const go=()=>{const v=add.querySelector("input").value.trim(); if(!v)return; blk.items.push(v); scheduleWrite("settings"); renderRoutine(); renderStrip(); const f=document.getElementById("radd-"+key); if(f)f.focus()};
+      add.querySelector("button").addEventListener("click",go); add.querySelector("input").addEventListener("keydown",e=>{if(e.key==="Enter")go()});
+      wrap.appendChild(add);
+    }
+    el.appendChild(wrap);
+  }
+  $("#edit-routine").textContent=editing?"Done":"Edit lists";
+}
+function streakFor(habit,upTo){
+  let n=0, d=upTo;
+  for(let i=0;i<400;i++){ const dd=days[d]; if(dd&&dd.habits&&dd.habits[habit]){n++; d=addDays(d,-1)} else break }
+  return n;
+}
+function renderHabits(){
+  const dd=day(current), el=$("#habits"); el.innerHTML="";
+  const editing=$("#habit-add").classList.contains("open");
+  if(!settings.habits.length){el.innerHTML='<div class="empty">No habits yet. Click Edit to add one.</div>'}
+  settings.habits.forEach((h,idx)=>{
+    const on=!!dd.habits[h]; const streak=streakFor(h,current);
+    const row=document.createElement("div"); row.className="habit";
+    const id="h-"+idx;
+    let dots="";
+    for(let i=13;i>=0;i--){const ds=addDays(current,-i); const x=days[ds]&&days[ds].habits&&days[ds].habits[h]; dots+='<i class="'+(x?"on":"")+(i===0?" today":"")+'" title="'+ds+'"></i>'}
+    row.innerHTML='<input type="checkbox" id="'+id+'"'+(on?" checked":"")+' style="width:17px;height:17px;accent-color:var(--accent);margin:0"><label for="'+id+'" class="name">'+esc(h)+'</label><span class="dots">'+dots+'</span><span class="streak">'+(editing?'<button class="rm" aria-label="Remove" style="opacity:1">✕</button>':'<b>'+streak+'</b> d')+'</span>';
+    row.querySelector("input").addEventListener("change",e=>{ if(e.target.checked)dd.habits[h]=true; else delete dd.habits[h]; scheduleWrite("day"); renderHabits(); renderStrip() });
+    const rm=row.querySelector(".rm"); if(rm) rm.addEventListener("click",()=>{ settings.habits.splice(idx,1); scheduleWrite("settings"); renderHabits(); renderStrip() });
+    el.appendChild(row);
+  });
+  $("#edit-habits").textContent=editing?"Done":"Edit";
+}
+function renderJournal(){
+  const dd=day(current);
+  JOURNAL.forEach(id=>{ const el=document.getElementById(id); const v=dd.journal[id]||""; if(el.value!==v) el.value=v });
+  const m=$("#mood"); if(!m.children.length){ for(let i=1;i<=5;i++){const b=document.createElement("button");b.type="button";b.textContent=i;b.dataset.v=i;b.setAttribute("aria-label","Mood "+i+" of 5");b.addEventListener("click",()=>{ dd.mood=(day(current).mood===i?0:i); scheduleWrite("day"); renderJournal(); renderStrip() }); m.appendChild(b)} }
+  Array.from(m.children).forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.v)===(day(current).mood||0))));
+}
+function renderTrading(){
+  const dd=day(current);
+  for(const sec of Object.keys(TRADING)){
+    const data=dd.trading[sec]||(dd.trading[sec]={});
+    TRADING[sec].forEach(id=>{ const el=document.getElementById(id); const v=data[id]??""; if(String(el.value)!==String(v)) el.value=v });
+  }
+  for(const segId of Object.keys(SEGS)){
+    const sec=segId[0]==="w"?"swing":"day"; const v=(dd.trading[sec]||{})[segId]||"";
+    $$("#"+segId+" button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.v===v)));
+  }
+}
+function renderStrip(){
+  const dd=day(current);
+  const rc=routineCount(dd);
+  $("#t-routine").innerHTML=rc.done+'<small> / '+rc.total+'</small>'; $("#t-routine-bar").style.width=(rc.total?100*rc.done/rc.total:0)+"%";
+  const hd=settings.habits.filter(h=>dd.habits[h]).length;
+  $("#t-habits").innerHTML=hd+'<small> / '+settings.habits.length+'</small>'; $("#t-habits-bar").style.width=(settings.habits.length?100*hd/settings.habits.length:0)+"%";
+  const best=settings.habits.reduce((m,h)=>Math.max(m,streakFor(h,current)),0);
+  $("#t-streak").innerHTML=best+'<small> days</small>';
+  const p=dd.trading.day&&dd.trading.day["d-pnl"]; const r=dd.trading.day&&dd.trading.day["d-r"];
+  const pn=p===""||p==null?null:Number(p);
+  const el=$("#t-pnl");
+  if(pn==null||isNaN(pn)){el.textContent="—";el.style.color=""}
+  else{el.innerHTML=(pn>0?"+":"")+pn.toLocaleString("en-GB",{minimumFractionDigits:0,maximumFractionDigits:2})+(r!==""&&r!=null?'<small> '+(Number(r)>0?"+":"")+Number(r)+'R</small>':'');el.style.color=pn>0?"var(--up)":pn<0?"var(--down)":""}
+  $("#t-mood").textContent=dd.mood?["","Low","Meh","Fine","Good","Great"][dd.mood]+" "+dd.mood+"/5":"—";
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+/* ---------- navigation & input wiring ---------- */
+function goTo(ds){ if(ds===current)return; clearTimeout(writeTimer); if(dayDirty||settingsDirty)flush(); current=ds; renderAll(); try{localStorage.setItem("daysheet:lastdate",ds)}catch(e){} }
+$("#prev").addEventListener("click",()=>goTo(addDays(current,-1)));
+$("#next").addEventListener("click",()=>goTo(addDays(current,1)));
+$("#today").addEventListener("click",()=>goTo(todayISO()));
+$("#datepick").addEventListener("change",e=>{ if(/^\d{4}-\d{2}-\d{2}$/.test(e.target.value)) goTo(e.target.value) });
+$("#edit-routine").addEventListener("click",()=>{ $("#routine").classList.toggle("editing"); renderRoutine() });
+$("#edit-habits").addEventListener("click",()=>{ $("#habit-add").classList.toggle("open"); renderHabits() });
+const addHabit=()=>{ const v=$("#habit-new").value.trim(); if(!v)return; if(settings.habits.includes(v)){toast("That habit already exists");return} settings.habits.push(v); $("#habit-new").value=""; scheduleWrite("settings"); renderHabits(); renderStrip() };
+$("#habit-add-btn").addEventListener("click",addHabit); $("#habit-new").addEventListener("keydown",e=>{if(e.key==="Enter")addHabit()});
+
+JOURNAL.forEach(id=>document.getElementById(id).addEventListener("input",e=>{ day(current).journal[id]=e.target.value; scheduleWrite("day"); renderWeek() }));
+for(const sec of Object.keys(TRADING)) TRADING[sec].forEach(id=>document.getElementById(id).addEventListener("input",e=>{ const dd=day(current); dd.trading[sec]=dd.trading[sec]||{}; dd.trading[sec][id]=e.target.value; scheduleWrite("day"); if(id==="d-pnl"||id==="d-r")renderStrip() }));
+for(const segId of Object.keys(SEGS)){ const sec=segId[0]==="w"?"swing":"day"; $$("#"+segId+" button").forEach(b=>{ b.type="button"; b.addEventListener("click",()=>{ const dd=day(current); dd.trading[sec]=dd.trading[sec]||{}; dd.trading[sec][segId]=(dd.trading[sec][segId]===b.dataset.v?"":b.dataset.v); scheduleWrite("day"); renderTrading(); renderWeek() }) }) }
+$$(".tabs [role=tab]").forEach(t=>t.addEventListener("click",()=>{ $$(".tabs [role=tab]").forEach(x=>x.setAttribute("aria-selected",String(x===t))); ["stocks","swing","day"].forEach(k=>{document.getElementById("tab-"+k).hidden=(k!==t.dataset.tab)}); try{localStorage.setItem("daysheet:tab",t.dataset.tab)}catch(e){} }));
+try{ const tb=localStorage.getItem("daysheet:tab"); if(tb){ const btn=document.querySelector('.tabs [data-tab="'+tb+'"]'); if(btn)btn.click() } }catch(e){}
+window.addEventListener("beforeunload",()=>{ if(dayDirty||settingsDirty){ clearTimeout(writeTimer); flush() } });
+document.addEventListener("visibilitychange",()=>{ if(document.hidden&&(dayDirty||settingsDirty)){clearTimeout(writeTimer);flush()} });
+
+/* ---------- boot ---------- */
+loadLocal();
+renderAll();
+connect();
+})();
+</script>
+</body>
+</html>
